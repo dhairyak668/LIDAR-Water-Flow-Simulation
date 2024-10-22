@@ -5,11 +5,7 @@
 #include "util.h"
 #include "bmp.h"
 
-/**
- * function to calculate and print Minimum Height, Maximum Height along with their respective (x,y)coordinates 
- * and Average Height
- * param: takes filename
- */
+
 void stat1(){
 
     double x, y, height;

@@ -1,14 +1,20 @@
-all : stat
+all : stat display
 
-stat : util.o pointcloud.o 
-	gcc -Wall -g -o stat util.o pointcloud.o 
+stat : parta.o pointcloud.o util.o bmp.o
+	gcc -Wall -g -o stat parta.o pointcloud.o util.o bmp.o
 
-pointcloud.o : pointcloud.c pointcloud.h util.h
+display : display.o pointcloud.o util.o bmp.o
+	gcc -Wall -g -o display display.o pointcloud.o util.o bmp.o
+
+pointcloud.o : pointcloud.c pointcloud.h util.h bmp.h
 	gcc -Wall -g -c pointcloud.c
 
 util.o : util.c util.h
 	gcc -Wall -g -c util.c
 
+bmp.o : bmp.c bmp.h
+	gcc -Wall -g -c bmp.c
+
 clean : 
-	rm -f *.o stat
+	rm -f *.o *.gif stat display
 

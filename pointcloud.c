@@ -10,14 +10,7 @@
  * and Average Height
  * param: takes filename
  */
-void stat1(const char *filename)
-{
-    FILE *file = fopen(filename,"r");
-
-    if(file == NULL){
-        fprintf(stderr,"Error in opening file\n");
-        return;
-    }
+void stat1(){
 
     double x, y, height;
     double minHeight = DBL_MAX; //better than setting to null. Thus even the first value will be considered min/max.
@@ -29,7 +22,7 @@ void stat1(const char *filename)
     double minX = 0, minY = 0, maxX = 0, maxY = 0;
 
     //will run until fscanf reads 3 inputs(returns 3). will exit at any error or EOF
-    while(fscanf(file, "%lf %lf %lf", &x, &y, &height) == 3) { 
+    while(fscanf(stdin, "%lf %lf %lf", &x, &y, &height) == 3) { 
         
         if(height < minHeight){
             minX = x;
@@ -47,8 +40,6 @@ void stat1(const char *filename)
         count++;
     }
 
-    fclose(file);
-
     double avgHeight = (count > 0) ? (totalHeight/count) : 0.0;
 
     printf("Minimum height: %lf at (%lf, %lf)\n",minHeight, minX, minY);
@@ -64,7 +55,7 @@ void readPointCloudData(FILE* stream, int* rasterWidth, List* pc){
         return;
     }
 
-    if(listInit(pc,sizeof(pcd_t)) == 0){
+    if(listInit(pc,sizeof(pcd_t)) == 1){
         return;
     }
 
@@ -72,9 +63,11 @@ void readPointCloudData(FILE* stream, int* rasterWidth, List* pc){
     
     while (fscanf(stream,"%lf %lf %lf",&x,&y,&z)==3)
     {
-        pcd_t* point = malloc(sizeof(pcd_t*));
+        pcd_t* point = malloc(sizeof(pcd_t));
         if(point == NULL){
             fprintf(stderr,"error in allocating memory for point");
+            // free(pc->data);
+            // free(pc);
             return;
         }
         point->x = x;
@@ -83,6 +76,8 @@ void readPointCloudData(FILE* stream, int* rasterWidth, List* pc){
         point->waterAmt = 0.0;
 
         listAddEnd(pc, point);
+        //since listAddEnd copies point to l->data memory for point will be wasted
+        free(point);
     }   
 }
 
@@ -99,7 +94,7 @@ void imagePointCloud(List* l, int width, char* filename){
 
     for(int i = 0; i<height;i++){
         for(int j = 0; j<width;j++){
-            pcd_t* point = (pcd_t*)listGet(l,INDEX(i,j,width)) //might replace macro with actual expression
+            pcd_t* point = (pcd_t*)listGet(l,INDEX(i,j,width)); //might replace macro with actual expression
             unsigned int color = mapHeightToColor(point->z, &stats);
             bm_set(bmp, j, i, color);
         }
@@ -118,12 +113,3 @@ unsigned int mapHeightToColor(double height, Stats* s){
 }
 
 
-int main(int argc, char *argv[]){
-    //checks if filename has been passed in cmd
-    if(argc != 2){
-        printf("Use as: %s <filename>\n",argv[0]);
-        return 1;
-    }
-    stat1(argv[1]);
-    return 0;
-}

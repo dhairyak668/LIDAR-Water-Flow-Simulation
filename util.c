@@ -33,26 +33,39 @@ void* allocateArray(int row, int column){
 
 
 int listInit(List* l, int max_elmt_size){
+
+    // l = malloc(sizeof(List));
+    // if(!l){
+    //     fprintf(stderr,"Error in allocating memory for List\n");
+    //     return 1;
+    // }
+
     l->max_size = 10;
     l->max_element_size = max_elmt_size;
     l->size = 0;
     l->data = malloc(getMaxListSize(l));
+
     if(l->data == NULL){
         fprintf(stderr, "Error in allocating memory for data in listInit\n");
-        return 0;
+        // free(l);
+        return 1;
     }
-    return 1;
+
+    return 0;
 }
 
 void listAddEnd(List* l, void* elmt){
+
     if(!l){
         fprintf(stderr,"invalid pointer to list\n");
         return;
     }
+    
     if(!elmt){
         fprintf(stderr,"invalid pointer to element\n");
         return;
     }
+    
     if(l->size >= l->max_size){
         l->max_size *= 2;
 
@@ -66,12 +79,14 @@ void listAddEnd(List* l, void* elmt){
         free(l->data);
         l->data = temp;
     }
+    
     //cast to char* for better pointer arithematic
     memcpy((char *)l->data + (getCurrentListSize(l)),elmt,l->max_element_size);
     l->size++;
 }
 
 void* listGet(List* l, int index){
+    
     if(!l){
         fprintf(stderr,"invalid pointer to list\n");
         return NULL;
@@ -94,16 +109,17 @@ int getCurrentListSize(List* l){
 }
 
 void computeStats(List* l, Stats* stats){
+    
     stats->minHeight = DBL_MAX;
     stats->maxHeight = -DBL_MAX;
 
     for (int i = 0; i < l->size; i++) {
         pcd_t* point = (pcd_t*)listGet(l, i);
-        if (point->z < stats->min_z) stats->min_z = point->z;
-        if (point->z > stats->max_z) stats->max_z = point->z;
+        if (point->z < stats->minHeight) stats->minHeight = point->z;
+        if (point->z > stats->maxHeight) stats->maxHeight = point->z;
     }
 
-    stats->range = stats->max_z - stats->min_z;
+    stats->range = stats->maxHeight - stats->minHeight;
 }
 
 

@@ -25,7 +25,7 @@ This project simulates water flow over terrain using LIDAR data, providing insig
 4) unsigned int mapHeightToColor(double height, Stats* s);
 ```
 
-####`util.c`
+####`util.c` 
 ```c
 1) void* allocateArray(int rows, int columns);
 2) int listInit(List* l, int max_elmt_size);

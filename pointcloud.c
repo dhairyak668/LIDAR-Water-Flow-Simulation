@@ -6,6 +6,14 @@
 #include "bmp.h"
 
 
+typedef struct{
+    List* points;
+    int rows;
+    int cols;
+    Stats stats;
+}pointcloud_t;
+
+
 void stat1(){
 
     double x, y, height;
@@ -44,15 +52,62 @@ void stat1(){
 }
 
 
-void readPointCloudData(FILE* stream, int* rasterWidth, List* pc){
+// void readPointCloudData(FILE* stream, int* rasterWidth, List* pc){
     
-    if(fscanf(stream,"%d",rasterWidth) != 1){
-        fprintf(stderr,"Error in reading number of columns \n");
-        return;
+//     if(fscanf(stream,"%d",rasterWidth) != 1){
+//         fprintf(stderr,"Error in reading number of columns \n");
+//         return;
+//     }
+
+//     if(listInit(pc,sizeof(pcd_t)) == 1){
+//         return;
+//     }
+
+//     double x,y,z;
+    
+//     while (fscanf(stream,"%lf %lf %lf",&x,&y,&z)==3)
+//     {
+//         pcd_t* point = malloc(sizeof(pcd_t));
+//         if(point == NULL){
+//             fprintf(stderr,"error in allocating memory for point");
+//             // free(pc->data);
+//             // free(pc);
+//             return;
+//         }
+//         point->x = x;
+//         point->y = y;
+//         point->z = z;
+//         point->waterAmt = 0.0;
+
+//         listAddEnd(pc, point);
+//         //since listAddEnd copies point to l->data memory for point will be wasted
+//         free(point);
+//     }   
+// }
+
+pointcloud_t* readPointCloudData(FILE* stream){
+    pointcloud_t* pointcloud = malloc(sizeof(pointcloud_t));
+    if(!pointcloud){
+        fprintf(stderr,"unable to allocate memory for pointcloud_t in readPointCloudData\n");
+        return NULL;
+    }
+    pointcloud->points = malloc(sizeof(List));
+    if(!(pointcloud->points)){
+        fprintf(stderr,"unable to allocate memory for List in pointcloud_t in readPointCloudData\n");
+        free(pointcloud);
+        return NULL;
+    }
+    if(fscanf(stream,"%d",pointcloud->cols) != 1){
+        fprintf(stderr,"Incorrect File Structure. Error in reading number of columns in pointcloud_t in readPointCloudData\n");
+        free(pointcloud->points);
+        free(pointcloud);
+        return NULL;
     }
 
-    if(listInit(pc,sizeof(pcd_t)) == 1){
-        return;
+    if(listInit(pointcloud->points,sizeof(pcd_t)) == 1){ //returns 1 on fail
+        free(pointcloud->points);
+        free(pointcloud);
+        return NULL;
     }
 
     double x,y,z;
@@ -64,6 +119,9 @@ void readPointCloudData(FILE* stream, int* rasterWidth, List* pc){
             fprintf(stderr,"error in allocating memory for point");
             // free(pc->data);
             // free(pc);
+            free(pointcloud->points->data);
+            free(pointcloud->points);
+            free(pointcloud);
             return;
         }
         point->x = x;
@@ -71,10 +129,11 @@ void readPointCloudData(FILE* stream, int* rasterWidth, List* pc){
         point->z = z;
         point->waterAmt = 0.0;
 
-        listAddEnd(pc, point);
+        listAddEnd(pointcloud->points, point);
         //since listAddEnd copies point to l->data memory for point will be wasted
         free(point);
-    }   
+    }
+    return pointcloud;   
 }
 
 void imagePointCloud(List* l, int width, char* filename){

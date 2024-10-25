@@ -22,7 +22,7 @@ struct pcd{
     double x;
     double y;
     double z;
-    double waterAmt;
+    double wd;
 
     pcd_t* north;
     pcd_t* south;

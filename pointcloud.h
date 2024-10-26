@@ -1,8 +1,6 @@
 #pragma once
 #include "util.h"
 
-
-
 /**
  * Function to calculate and print the Minimum Height, Maximum Height 
  * along with their respective (x, y) coordinates and Average Height.
@@ -12,25 +10,33 @@ void stat1();
 
 /**
  * Reads point cloud data from the given stream and initializes 
- * a List structure with the points.
- * expects memory allocation (malloc call) for list is already done
+ * a pointcloud structure with the List of points and other variables.
  * 
  * @param stream The input stream to read the data from.
- * @param rasterWidth Pointer to store the number of columns.
- * @param pc Pointer to the List structure that will hold the point cloud data.
+ * @return A pointer to the pointcloud_t structure initialized with the data from stream.
  */
-void readPointCloudData(FILE* stream, int *rasterWidth, List* pc);
+pointcloud_t* readPointCloudData(FILE* stream);
+
+/**
+ * Initializes the water depth (wd) value for all points to 0.
+ *
+ * This function sorts the points in the point cloud into a new list based on their x and y coordinates.
+ * The function also initializes the north, south, east, and west pointers for each point with (minX, minY) being South-West.
+ *
+ * @param pointcloud A pointer to the pointcloud_t structure to be initialized.
+ * @return An integer indicating the success or failure of the initialization.
+ *         Typically, a return value of 0 indicates success, while a non-zero
+ *         value indicates an error.
+ */
+int initializeWatershed(pointcloud_t *);
 
 /**
  * Creates a bitmap image from the point cloud data and saves it to the given filename.
  * 
- * @param l Pointer to the List structure containing point cloud data.
- * @param width The width of the image to be created.
+ * @param pointList Pointer to the pointcloud_t structure containing point cloud data.
  * @param filename The name of the file to save the bitmap image.
  */
-void imagePointCloud(List* pointsList, int width, char* filename);
-
-int initializeWatershed(pointcloud_t *);
+void imagePointCloud(pointcloud_t* pc, char* filename);
 
 /**
  * Maps a height value to a grayscale color based on its position within the given stats.

@@ -111,6 +111,14 @@ void listAddEnd(List* l, void* elmt);
  */
 void* listGet(List* l, int index);
 
+/**
+ * Sets the element at the specified index in the list.
+ *
+ * @param l Pointer to the list.
+ * @param index The index at which the element should be set.
+ * @param element Pointer to the element to be set.
+ * @return An integer indicating success (0) or failure (-1).
+ */
 int listSet(List* l, int index, void* element);
 
 /**

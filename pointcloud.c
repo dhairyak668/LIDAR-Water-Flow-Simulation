@@ -97,7 +97,7 @@ pointcloud_t* readPointCloudData(FILE* stream){
         free(pointcloud);
         return NULL;
     }
-    if(fscanf(stream,"%d",pointcloud->cols) != 1){
+    if(fscanf(stream,"%d",&(pointcloud->cols)) != 1){
         fprintf(stderr,"Incorrect File Structure. Error in reading number of columns in pointcloud_t in readPointCloudData\n");
         free(pointcloud->points);
         free(pointcloud);
@@ -123,7 +123,7 @@ pointcloud_t* readPointCloudData(FILE* stream){
             free(pointcloud->points->data);
             free(pointcloud->points);
             free(pointcloud);
-            return;
+            return NULL;
         }
         point->x = x;
         point->y = y;
@@ -270,6 +270,7 @@ void imagePointCloud(pointcloud_t* pc, char* filename){
             pcd_t* point = (pcd_t*)listGet(pc->points,INDEX(i,j,width));
             if (!point) {
                 fprintf(stderr, "Error in retrieving point from list in imagePointCloud\n");
+                bm_free(bmp);
                 return;
             }
             unsigned int color = mapHeightToColor(point->z, &(pc->stats));
@@ -278,9 +279,10 @@ void imagePointCloud(pointcloud_t* pc, char* filename){
     }
     if(bm_save(bmp,filename) != 1){
         fprintf(stderr,"Unable to save bitmap.\n");
+        bm_free(bmp);
+        return;
     }
     bm_free(bmp);
-
 }
 
 unsigned int mapHeightToColor(double height, Stats* s){

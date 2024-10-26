@@ -100,6 +100,19 @@ void* listGet(List* l, int index){
     return (char*)l->data + (index * l->max_element_size);
 }
 
+int listSet(List* l, int index, void* elmt){
+    if(!l){
+        fprintf(stderr,"Invalid List to listSet\n");
+        return -1;
+    }
+    if(index < 0 || index > l->max_size){
+        fprintf(stderr,"Invalid index value to listSet\n");
+        return -1;
+    }
+    memcpy((char *)l->data + (index * l->max_element_size),elmt,l->max_element_size);
+    return 0;
+}
+
 int getMaxListSize(List* l){
     return (l->max_size) * (l->max_element_size);
 }
@@ -110,16 +123,25 @@ int getCurrentListSize(List* l){
 
 void computeStats(List* l, Stats* stats){
     
-    stats->minHeight = DBL_MAX;
-    stats->maxHeight = -DBL_MAX;
+    stats->minZ = DBL_MAX;
+    stats->maxZ = -DBL_MAX;
+    stats->minX = DBL_MAX;
+    stats->maxX = -DBL_MAX;
+    stats->minY = DBL_MAX;
+    stats->maxY = -DBL_MAX;
 
     for (int i = 0; i < l->size; i++) {
         pcd_t* point = (pcd_t*)listGet(l, i);
-        if (point->z < stats->minHeight) stats->minHeight = point->z;
-        if (point->z > stats->maxHeight) stats->maxHeight = point->z;
+        if (point->z < stats->minZ) stats->minZ = point->z;
+        if (point->z > stats->maxZ) stats->maxZ = point->z;
+        if (point->x < stats->minX) stats->minX = point->x;
+        if (point->x > stats->maxX) stats->maxX = point->x;
+        if (point->y < stats->minY) stats->minY = point->y;
+        if (point->y > stats->maxY) stats->maxY = point->y;
+
     }
 
-    stats->range = stats->maxHeight - stats->minHeight;
+    stats->heightRange = stats->maxZ - stats->minZ;
 }
 
 

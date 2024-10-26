@@ -28,7 +28,9 @@ void readPointCloudData(FILE* stream, int *rasterWidth, List* pc);
  * @param width The width of the image to be created.
  * @param filename The name of the file to save the bitmap image.
  */
-void imagePointCloud(List* l, int width, char* filename);
+void imagePointCloud(List* pointsList, int width, char* filename);
+
+int initializeWatershed(pointcloud_t *);
 
 /**
  * Maps a height value to a grayscale color based on its position within the given stats.

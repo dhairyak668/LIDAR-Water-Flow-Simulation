@@ -1,13 +1,13 @@
 all : stat display watershed
 
 stat : parta.o pointcloud.o util.o bmp.o
-	gcc -Wall -g -o stat parta.o pointcloud.o util.o bmp.o
+	gcc -Wall -g -o stat parta.o pointcloud.o util.o bmp.o -lm
 
 display : display.o pointcloud.o util.o bmp.o
-	gcc -Wall -g -o display display.o pointcloud.o util.o bmp.o
+	gcc -Wall -g -o display display.o pointcloud.o util.o bmp.o -lm
 
 watershed : watershed.o pointcloud.o util.o bmp.o
-	gcc -Wall -g -o watershed watershed.o pointcloud.o util.o bmp.o
+	gcc -Wall -g -o watershed watershed.o pointcloud.o util.o bmp.o -lm
 
 parta.o : parta.c pointcloud.h util.h bmp.h
 	gcc -Wall -g -c parta.c

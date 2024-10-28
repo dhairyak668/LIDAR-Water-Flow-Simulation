@@ -307,9 +307,7 @@ unsigned int mapWaterDepthToColor(pcd_t* point, double maxwd, Stats* s){
     }
     double bucket = (point->z - s->minZ)/s->heightRange;
     unsigned char greyscale = (unsigned char)(bucket * 255);
-    double blueRatio = fmin((point->wd/maxwd),1.0);
-    // printf("blueRatio: %lf\n",blueRatio);
-    unsigned char blueScale = (blueRatio == 1.0) ? (unsigned char)(255) : (unsigned char)(greyscale*(1.0+blueRatio));
+    double blueRatio = (maxwd != 0) ? ((point->wd / maxwd) < 1.0 ? (point->wd / maxwd) : 1.0) : 0.0;
     greyscale = (unsigned char)(greyscale * (1.0 - blueRatio));
     return bm_rgb(greyscale,greyscale,255);
 }

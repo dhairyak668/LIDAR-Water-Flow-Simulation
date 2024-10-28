@@ -19,22 +19,26 @@ int main(int argc, char* argv[]){
         return 1;
     }
 
-    List* l = malloc(sizeof(List));
-    if(!l){
-        fprintf(stderr,"Error in allocating memory for List\n");
-        fclose(inputFile);
+    // List* l = malloc(sizeof(List));
+    // if(!l){
+    //     fprintf(stderr,"Error in allocating memory for List\n");
+    //     fclose(inputFile);
+    //     return 1;
+    // }
+
+    // int width;
+
+    pointcloud_t* pc = readPointCloudData(inputFile);
+    fclose(inputFile);
+    if (!pc) {
+        fprintf(stderr, "Error reading point cloud data\n");
         return 1;
     }
-
-    int width;
-    readPointCloudData(inputFile,&width,l);
-    fclose(inputFile);
     char outfile[] = "out.gif";
-    imagePointCloud(l,width,outfile);
+    imagePointCloud(pc,outfile);
     printf("GIF saved as %s\n",outfile);
 
-    free(l->data);
-    free(l);
+    
     return 0;
 }
 

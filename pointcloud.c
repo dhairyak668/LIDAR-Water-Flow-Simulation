@@ -6,14 +6,6 @@
 #include "util.h"
 #include "bmp.h"
 
-typedef struct{
-    List* points;
-    int rows;
-    int cols;
-    Stats stats;
-}pointcloud_t;
-
-
 void stat1(){
 
     double x, y, height;
@@ -50,40 +42,6 @@ void stat1(){
     printf("Maximun height: %lf at (%lf, %lf)\n",maxZ, maxX, maxY);
     printf("Average height: %lf\n", avgHeight);
 }
-
-
-// void readPointCloudData(FILE* stream, int* rasterWidth, List* pc){
-    
-//     if(fscanf(stream,"%d",rasterWidth) != 1){
-//         fprintf(stderr,"Error in reading number of columns \n");
-//         return;
-//     }
-
-//     if(listInit(pc,sizeof(pcd_t)) == 1){
-//         return;
-//     }
-
-//     double x,y,z;
-    
-//     while (fscanf(stream,"%lf %lf %lf",&x,&y,&z)==3)
-//     {
-//         pcd_t* point = malloc(sizeof(pcd_t));
-//         if(point == NULL){
-//             fprintf(stderr,"error in allocating memory for point");
-//             // free(pc->data);
-//             // free(pc);
-//             return;
-//         }
-//         point->x = x;
-//         point->y = y;
-//         point->z = z;
-//         point->waterAmt = 0.0;
-
-//         listAddEnd(pc, point);
-//         //since listAddEnd copies point to l->data memory for point will be wasted
-//         free(point);
-//     }   
-// }
 
 pointcloud_t* readPointCloudData(FILE* stream){
     pointcloud_t* pointcloud = malloc(sizeof(pointcloud_t));
@@ -125,6 +83,7 @@ pointcloud_t* readPointCloudData(FILE* stream){
             free(pointcloud);
             return NULL;
         }
+
         point->x = x;
         point->y = y;
         point->z = z;
@@ -201,7 +160,7 @@ int initializeWatershed(pointcloud_t * pointcloud){
 
             int colIndex = (int)((point->x - minX)/xInterval);
             int rowIndex = (int)((point->y - minY)/yInterval);
-            if(listSet(newList,INDEX(rowIndex,colIndex,j,cols),point) != 0){
+            if(listSet(newList,INDEX(rowIndex,colIndex,cols),point) != 0){
                 fprintf(stderr,"Unable to copy data from original list to newList in initializeWatershed\n");
                 free(newList->data);
                 free(newList);
@@ -226,31 +185,6 @@ int initializeWatershed(pointcloud_t * pointcloud){
     return 0;
 
 }
-
-// void imagePointCloud(List* pointsList, int width, char* filename){
-//     Stats stats;
-//     computeStats(pointsList, &stats);
-
-//     int height = pointsList->size / width;
-//     Bitmap* bmp = bm_create(width,height);
-//     if(!bmp){
-//         fprintf(stderr,"unable to create Bitmap.\n");
-//         return;
-//     }
-
-//     for(int i = 0; i<height;i++){
-//         for(int j = 0; j<width;j++){
-//             pcd_t* point = (pcd_t*)listGet(pointsList,INDEX(i,j,width)); //might replace macro with actual expression
-//             unsigned int color = mapHeightToColor(point->z, &stats);
-//             bm_set(bmp, j, i, color);
-//         }
-//     }
-//     if(bm_save(bmp,filename) != 1){
-//         fprintf(stderr,"Unable to save bitmap.\n");
-//     }
-//     bm_free(bmp);
-
-// }
 
 void imagePointCloud(pointcloud_t* pc, char* filename){
     if(!pc){
@@ -277,6 +211,39 @@ void imagePointCloud(pointcloud_t* pc, char* filename){
             bm_set(bmp, j, i, color);
         }
     }
+    if(bm_save(bmp,filename) != 1){ //returns 1 on success
+        fprintf(stderr,"Unable to save bitmap.\n");
+        bm_free(bmp);
+        return;
+    }
+    bm_free(bmp);
+}
+
+void imagePointCloudWater(pointcloud_t* pc, double maxwd, char* filename){
+    if(!pc){
+        fprintf(stderr,"Invalid pointer to pointcloud_t\n");
+        return;
+    }
+    int height = pc->rows;
+    int width = pc->cols;
+    Bitmap* bmp = bm_create(width,height);
+    if(!bmp){
+        fprintf(stderr,"unable to create Bitmap.\n");
+        return;
+    }
+
+    for(int i = 0; i<height;i++){
+        for(int j = 0; j<width;j++){
+            pcd_t* point = (pcd_t*)listGet(pc->points,INDEX(i,j,width));
+            if (!point) {
+                fprintf(stderr, "Error in retrieving point from list in imagePointCloudWater\n");
+                bm_free(bmp);
+                return;
+            }
+            unsigned int color = mapWaterDepthToColor(point, maxwd, &(pc->stats));
+            bm_set(bmp, j, i, color);
+        }
+    }
     if(bm_save(bmp,filename) != 1){
         fprintf(stderr,"Unable to save bitmap.\n");
         bm_free(bmp);
@@ -285,10 +252,114 @@ void imagePointCloud(pointcloud_t* pc, char* filename){
     bm_free(bmp);
 }
 
+
+void watershedAddUniformWater(pointcloud_t* pc, double amount){
+    if(!pc){
+        fprintf(stderr,"Invalid pointer to pointcloud_t\n");
+        return;
+    }
+    for(int i = 0; i<pc->rows;i++){
+        for(int j = 0; j<pc->cols;j++){
+            pcd_t* point = (pcd_t*)listGet(pc->points,INDEX(i,j,pc->cols));
+            if (!point) {
+                fprintf(stderr, "Error in retrieving point from list in watershedAddUniformWater\n");
+                return;
+            }
+            point->wd += amount;
+        }
+    }
+}
+
+void watershedStep(pointcloud_t* pc){
+    if(!pc){
+        fprintf(stderr,"Invalid pointer to pointcloud_t\n");
+        return;
+    }
+    double* changes = malloc(sizeof(double) * pc->points->size);
+    if(!changes){
+        fprintf(stderr,"Error in allocating memory for changes[Array] in watershedStep\n");
+        return;
+    }
+    for(int index = 0; index < pc->points->size; index++){
+        pcd_t* point = (pcd_t*)listGet(pc->points,index);
+        // if (!point) handled in calculateChangeInWater
+        changes[index] = calculateChangeInWater(point,pc->wcoef,pc->ecoef);
+    }
+
+    for(int index = 0; index < pc->points->size; index++){
+        pcd_t* point = (pcd_t*)listGet(pc->points,index);
+        if(!point){
+            fprintf(stderr,"Error in retrieving point from list in watershedStep\n");
+            free(changes);
+            return;
+        }
+        point->wd += changes[index];
+    }
+    free(changes);
+}
+
+unsigned int mapWaterDepthToColor(pcd_t* point, double maxwd, Stats* s){
+    if(!point){
+        fprintf(stderr,"Invalid pointer to pcd_t in mapWaterDepthToColor\n");
+        return 0;
+    }
+    if(!s){
+        fprintf(stderr,"Invalid pointer to Stats in mapWaterDepthToColor\n");
+        return 0;
+    }
+    double bucket = (point->z - s->minZ)/s->heightRange;
+    unsigned char greyscale = (unsigned char)(bucket * 255);
+    double blueRatio = fmin((point->wd/maxwd),1.0);
+    // printf("blueRatio: %lf\n",blueRatio);
+    unsigned char blueScale = (blueRatio == 1.0) ? (unsigned char)(255) : (unsigned char)(greyscale*(1.0+blueRatio));
+    greyscale = (unsigned char)(greyscale * (1.0 - blueRatio));
+    return bm_rgb(greyscale,greyscale,255);
+}
+
+
 unsigned int mapHeightToColor(double height, Stats* s){
+    if(!s){
+        fprintf(stderr,"Invalid pointer to Stats in mapHeightToColor\n");
+        return 0;
+    }
     double bucket = (height - s->minZ)/s->heightRange;
     unsigned char greyscale = (unsigned char)(bucket * 255);
     return bm_rgb(greyscale,greyscale,greyscale);
+}
+
+void setWcoef(pointcloud_t* pc, double wcoef){
+    if(!pc){
+        fprintf(stderr,"Invalid pointer to pointcloud_t\n");
+        return;
+    }
+    pc->wcoef = wcoef;
+}
+
+void setEcoef(pointcloud_t* pc, double ecoef){
+    if(!pc){
+        fprintf(stderr,"Invalid pointer to pointcloud_t\n");
+        return;
+    }
+    pc->ecoef = ecoef;
+}
+
+double calculateFunc(pcd_t* point, pcd_t* neighbor, double wcoef){
+    if(!point || !neighbor){
+        return 0.0;
+    }
+    return (point->z + point->wd - neighbor->z - neighbor->wd) * wcoef;
+}
+
+double calculateChangeInWater(pcd_t* point,double wcoef, double ecoef){
+    if(!point){
+        return 0.0;
+    }
+    double change = 0.0;
+    change += calculateFunc(point,point->north,wcoef);
+    change += calculateFunc(point,point->south,wcoef);
+    change += calculateFunc(point,point->east,wcoef);
+    change += calculateFunc(point,point->west,wcoef);
+    return (change - (point->wd * ecoef));
 }
 
 

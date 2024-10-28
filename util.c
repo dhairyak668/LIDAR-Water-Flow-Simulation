@@ -110,7 +110,7 @@ int listSet(List* l, int index, void* elmt){
         return -1;
     }
     memcpy((char *)l->data + (index * l->max_element_size),elmt,l->max_element_size);
-    return 0;
+    return 0;   
 }
 
 int getMaxListSize(List* l){

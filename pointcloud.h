@@ -47,6 +47,16 @@ int initializeWatershed(pointcloud_t *);
  */
 void imagePointCloud(pointcloud_t* pc, char* filename);
 
+/**
+ * @brief Processes a point cloud to simulate water effects and saves the result to an image file.
+ *
+ * This function takes a pointcloud_t and applies a water effect based on the specified maximum water depth.
+ * The processed point cloud is then saved as an image to the specified file.
+ *
+ * @param pc Pointer to the point cloud structure to be processed.
+ * @param maxwd Maximum water depth to be used in the simulation.
+ * @param filename Name of the file where the resulting image will be saved.
+ */
 void imagePointCloudWater(pointcloud_t* pc, double maxwd, char* filename);
 
 /**

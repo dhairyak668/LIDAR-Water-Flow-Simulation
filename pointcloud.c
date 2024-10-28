@@ -213,8 +213,6 @@ void imagePointCloud(pointcloud_t* pc, char* filename){
     }
     if(bm_save(bmp,filename) != 1){ //returns 1 on success
         fprintf(stderr,"Unable to save bitmap.\n");
-        bm_free(bmp);
-        return;
     }
     bm_free(bmp);
 }

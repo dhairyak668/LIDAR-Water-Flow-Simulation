@@ -13,6 +13,7 @@ This project simulates water flow over terrain using LIDAR data, providing insig
 - `bmp.h`: Header file declaring bitmap functions.
 - `parta.c`: Implements main method to test stat1 function
 - `display.c`: Implements main method to test partb
+- `watershed.c`: Implements water flow simulation over the terrain.
 - `Makefile`: Used to compile the project.
 - `testfiles`: Directory containing test files in .xyz format.
 
@@ -20,9 +21,19 @@ This project simulates water flow over terrain using LIDAR data, providing insig
 #### `pointcloud.c`
 ```c
 1) void stat1();
-2) void readPointCloudData(FILE* 3)stream, int *rasterWidth, List* pc);
+2) pointcloud_t* readPointCloudData(FILE* stream);
 3) void imagePointCloud(List* l, int width, char* filename);
-4) unsigned int mapHeightToColor(double height, Stats* s);
+4) void imagePointCloudWater(pointcloud_t* pc, double maxwd, char* filename);
+5) void watershedAddUniformWater(pointcloud_t* pc, double amount);
+6) void watershedStep(pointcloud_t* pc);
+7) int initializeWatershed(pointcloud_t *);
+8) unsigned int mapWaterDepthToColor(pcd_t* point, double maxwd, Stats* s);
+9) unsigned int mapHeightToColor(double height, Stats* s);
+10) void setWcoef(pointcloud_t* pc, double wcoef);
+11) void setEcoef(pointcloud_t* pc, double ecoef);
+12) double calculateFunc(pcd_t* point, pcd_t* neighbor, double wcoef);
+13) double calculateChangeInWater(pcd_t* point,double wcoef, double ecoef);
+
 ```
 
 ####`util.c`

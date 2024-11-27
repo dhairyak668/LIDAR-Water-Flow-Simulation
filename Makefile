@@ -5,7 +5,7 @@ stat : parta.o pointcloud.o util.o bmp.o
 
 display : display.o pointcloud.o util.o bmp.o
 	gcc -Wall -g -o display display.o pointcloud.o util.o bmp.o -lm
-
+  
 watershed : watershed.o pointcloud.o util.o bmp.o
 	gcc -Wall -g -o watershed watershed.o pointcloud.o util.o bmp.o -lm
 

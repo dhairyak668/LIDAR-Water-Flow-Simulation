@@ -22,7 +22,7 @@ struct pcd{
     double x;
     double y;
     double z;
-    double waterAmt;
+    double wd;
 
     pcd_t* north;
     pcd_t* south;
@@ -58,14 +58,20 @@ typedef struct {
  * 
  * It has these members:
  * 
- * *`double minHeight` - stores the minimum height of all the points in the list
- * *`double maxHeight` - stores the maximum height of all the points in the list
- * *`double range` - stores the range of heights of the points in the list
+ * *`double minZ` - stores the minimum height of all the points in the list
+ * *`double maxZ` - stores the maximum height of all the points in the list
+ * *`double heightRange` - stores the range of heights of the points in the list
  */
 typedef struct {
-    double minHeight;
-    double maxHeight;
-    double range;
+    double minZ;
+    double maxZ;
+    double minX;
+    double minY;
+    double maxX;
+    double maxY;
+    double xInterval;
+    double yInterval;
+    double heightRange;
 }Stats;
 
 /**
@@ -104,6 +110,16 @@ void listAddEnd(List* l, void* elmt);
  * @return Pointer to the element, or NULL if the index is out of bounds.
  */
 void* listGet(List* l, int index);
+
+/**
+ * Sets the element at the specified index in the list.
+ *
+ * @param l Pointer to the list.
+ * @param index The index at which the element should be set.
+ * @param element Pointer to the element to be set.
+ * @return An integer indicating success (0) or failure (-1).
+ */
+int listSet(List* l, int index, void* element);
 
 /**
  * Calculates and returns the maximum size of the List in bytes.
